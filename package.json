@@ -1,0 +1,64 @@
+{
+  "name": "starter-react-grommet",
+  "version": "0.3.0",
+  "private": true,
+  "dependencies": {
+    "grommet": "^2.14.0",
+    "grommet-icons": "^4.4.0",
+    "gtfs-realtime-pbf-js-module": "^1.0.0",
+    "mapbox-gl": "^1.12.0",
+    "npm": "^6.14.8",
+    "pbf": "^3.2.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-redux": "^7.2.1",
+    "react-scripts": "^3.4.3",
+    "redux": "^4.0.5",
+    "redux-logger": "^3.0.6",
+    "styled-components": "^5.1.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.4",
+    "@testing-library/jest-dom": "^5.1.1",
+    "@testing-library/react": "^9.4.0",
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.11",
+    "plop": "^2.7.1",
+    "prettier": "^2.0.5",
+    "pretty-quick": "^2.0.1",
+    "redux-devtools-extension": "^2.13.8"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "eject": "react-scripts eject",
+    "test": "react-scripts test",
+    "lint": "eslint './src/**/*.js'",
+    "lint:fix": "eslint './src/**/*.js' --fix",
+    "plop": "plop"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
+  },
+  "lint-staged": {
+    "src /**/*.{js,jsx}": [
+      "eslint src/ --fix",
+      "pretty-quick — staged",
+      "git add"
+    ]
+  }
+}

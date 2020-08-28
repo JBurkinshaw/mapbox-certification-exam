@@ -1,0 +1,13 @@
+import '@testing-library/jest-dom/extend-expect'
+import React from 'react'
+import { render } from '../../testUtilities/reactTestingLibraryRenderOverride'
+
+import {{pascalCase name}} from './{{pascalCase name}}'
+
+test('{{pascalCase name}} component renders with the expected UI elements', () => {
+const { getByText } = render(
+<{{pascalCase name}} />)
+
+expect(getByText('I should fail'))
+
+})

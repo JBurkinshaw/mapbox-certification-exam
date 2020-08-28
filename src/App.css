@@ -1,0 +1,82 @@
+/*
+
+  All top-level styling instruction here. All base styling of each HTML element can be found here.
+
+*/
+
+
+@import url('https://rsms.me/inter/inter.css');
+@import url('https://fonts.googleapis.com/css?family=Montserrat:300, 400,900|Roboto:300, 400,900|IBM+Plex+Sans:200,300,400,900');
+html {
+  /* Sets 1rem default size to 10px */
+  font-size: 62.5%;
+}
+
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
+  font-size: 1.6rem;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+button:focus {outline:0 !important;}
+
+h1 {
+  font-family: 'Inter', sans-serif;
+  font-size: 4.8rem;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 2.64rem;
+}
+h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 3.2rem;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 2.04rem;
+
+}
+
+h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: 28px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 1.54rem;
+}
+p {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.6rem;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 2rem;
+}
+blockquote {
+  font-family: 'Inter', sans-serif;
+  font-size: 2.1rem;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 3rem;
+}
+pre {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.3rem;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 1.85714rem;
+}
