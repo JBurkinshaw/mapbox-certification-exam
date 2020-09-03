@@ -4,16 +4,17 @@ const gtfsArrayToGeojsonFeatures = (gtfsArray) => {
   // const routeColors
   return {
     "type": "FeatureCollection",
-    "features": gtfsArray.map((gtfsObject) => {
+    "features": gtfsArray.map((gtfsObject, index) => {
       return {
         type: "Feature",
-        id: gtfsObject.id,
+        id: index,
         properties: {
           // Depending on your data source, the properties available on "gtfsObject" may be different:
           route: gtfsObject.vehicle.trip.route_id,
-          route_start: gtfsObject.vehicle.trip.start_time,
           vehicle_label: gtfsObject.vehicle.vehicle.label,
-          bearing: gtfsObject.vehicle.position.bearing
+          vehicle_id: gtfsObject.vehicle.vehicle.id,
+          bearing: gtfsObject.vehicle.position.bearing,
+          timestamp: gtfsObject.vehicle.timestamp
         },
         geometry: {
           type: "Point",

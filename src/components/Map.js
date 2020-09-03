@@ -1,9 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react'
+import ReactDOM from 'react-dom'
+import { useDispatch } from 'react-redux'
+
 
 // import { get } from 'axios'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import styled from 'styled-components'
+import VehicleInfoPopup from './VehicleInfoPopup'
+import { setZoom, setVehicleGeojson } from '../actions/mapActions'
 // import { useDispatch } from 'react-redux'
 // import { setHoveredVehicle } from '../actions/truckAction'
 // import { setMarker, mapReady } from '../actions/mapMarkerAction'
@@ -16,34 +21,34 @@ const MapContainer = styled.div`
 `
 
 const streetsStyle = 'mapbox://styles/jburkinshaw/ckeaep0sy07ha19lgicqes99y'
-// const rasterStyle = 'mapbox://styles/mapbox/satellite-v9'
+const satelliteStyle = 'mapbox://styles/mapbox/satellite-v9'
 
-// Generates HTML For mapbox popup
-// const generatepopup = ({ callsign, vehicleType, message, type }) => {
-//   return `<div class="${type}"><div><strong>New ${type} from callsign ${callsign}</strong></div><div class="content-paper">${message}</div></div>`
-// }
+const MapboxGLMap = ({ basemapWaterColor, vehicleGeojson, selectedRoute, mapZoom }) => {
+  const dispatch = useDispatch()
 
-// Restricts panning extent for the map
-// const maxBounds = [
-//   [-118.93, 54.6737], // Southwest coordinates
-//   [-106.75, 58.5824], // Northeast coordinates
-// ]
-
-// let marker
-
-
-
-const MapboxGLMap = ({basemapWaterColor}) => {
+  const setMapZoom = (zoom) => dispatch(setZoom(zoom))
   const [map, setMap] = useState(null)
   const [popup, setPopup] = useState(null)
-  const [hoveredPoint, setHoveredPoint] = useState(null)
-  const [vehicleGeojson, setVehicleGeojson] = useState({ features: [], type: 'FeatureCollections' })
+  const [markerCoords, setMarkerCoords] = useState(null)
+  const marker = useRef();
+  const prevZoom = useRef();
+  const setGeojson = (vehicleGeojson) => dispatch(setVehicleGeojson(vehicleGeojson))
   const mapContainer = useRef(null)
-  // const [popup, setPopup] = useState(null)
-  // const dispatch = useDispatch()
-  // const setHover = (id) => dispatch(setHoveredVehicle(id))
-  // const setMapMarker = ({ lng, lat }) => dispatch(setMarker([lng, lat]))
-  // const setMapReady = () => dispatch(mapReady())
+
+  // Use to track styling so styledata does not fire too many times
+  let isStyling = useRef(false)
+
+
+  const updatePopup = (reactElement, lng, lat) => {
+    const placeholder = document.createElement('div');
+    ReactDOM.render(reactElement, placeholder);
+
+    popup.setDOMContent(placeholder)
+      .setLngLat({lng: lng, lat: lat})
+      .addTo(map);
+  }
+
+  console.log(selectedRoute)
 
   // Create the map initially
   useEffect(() => {
@@ -54,23 +59,23 @@ const MapboxGLMap = ({basemapWaterColor}) => {
 
     const updateVehiclePositions = async () => {
       const geoJson = await gtfsArrayToGeojsonFeatures(await getPositionData())
-      setVehicleGeojson(geoJson);
+      setGeojson(geoJson);
       console.info('Vehicle positions updated')
       console.log(geoJson)
     }
 
-    const initializeMap = async ({ setMap, setVehicleGeojson, mapContainer }) => {
+    const initializeMap = async ({ setMap, mapContainer }) => {
       const map = new mapboxgl.Map({
         container: mapContainer.current,
         style: streetsStyle,
         center: [-123.117619, 49.282457],
-        zoom: 13,
+        zoom: mapZoom,
       })
 
       // Create a popup
       setPopup(
         new mapboxgl.Popup({
-          closeButton: true,
+          closeButton: false,
           closeOnClick: false,
         }),
       )
@@ -78,53 +83,153 @@ const MapboxGLMap = ({basemapWaterColor}) => {
       // Initial set of vehicle positions
       updateVehiclePositions();
 
-      // Update vehicle positions regularly
       let interval
+      // Map load event
       map.on('load', () => {
         setMap(map)
         map.resize()
-        // setMapReady()
+        // Update vehicle positions regularly
         interval = setInterval(async () => {
           updateVehiclePositions();
         }, geojsonUpdateFrequency);
       })
+
+      // Map click event
+      map.on('click', (e) => {
+        map.flyTo({
+          center: e.lngLat
+        });
+        
+        setMarkerCoords(e.lngLat)
+      })
+
       return () => clearInterval(interval);
     }
 
-    if (!map) initializeMap({ setMap, setVehicleGeojson, mapContainer })
-  }, [map, vehicleGeojson])
+    if (!map) initializeMap({ setMap, setGeojson, mapContainer })
+  }, [map])
 
+   useEffect(() => {
+    if (!map) return
+
+    map.on('zoomend', () => {
+      const zoom = map.getZoom()
+      console.log(zoom)
+      setMapZoom(zoom)
+
+      if (zoom > 15) {
+        if (prevZoom.current <= 15) {
+          map.setStyle(satelliteStyle)
+          isStyling.current = true
+        }
+      } else {
+        if (prevZoom.current >= 15) {
+          map.setStyle(streetsStyle)
+          isStyling.current = true
+        }
+      }
+
+      prevZoom.current = zoom
+    })
+   }, [map])
+
+   useEffect(() => {
+    if (!map) return
+
+    map.on('styledata', () => {
+      if (isStyling.current === true) {
+        addSourceAndLayer()
+        isStyling.current = false
+      }
+    })
+   }, [map])
+
+  // Create marker and move if the cooords are updated
+  useEffect(() => {
+    if (!marker.current && markerCoords) {
+      const htmlMarker = new mapboxgl.Marker()
+        .setLngLat(markerCoords)
+        .addTo(map)
+      
+      marker.current = htmlMarker
+    } else if (markerCoords) {
+      marker.current.setLngLat(markerCoords)
+    }
+  }, [markerCoords])
+
+  // Filter selected route
+  useEffect(() => {
+    if (!map) return
+
+    setPositionMapFilter()
+  }, [selectedRoute])
+
+  const setPositionMapFilter = () => {
+    if (!map) return
+    if (!map.getSource('positions') || vehicleGeojson.features.length === 0) return
+    // Set a filter if relevant
+    if (selectedRoute && selectedRoute !== "All routes") {
+      map.setFilter('positions', ['==', ['get', 'route'], selectedRoute])
+    } else {
+      // Remove filter
+      map.setFilter('positions', null)
+    }
+  }
+
+  const addSourceAndLayer = () => {
+    if (!map) return
+
+    const baseData = {
+      type: 'geojson',
+      data: vehicleGeojson,
+    }
+
+    if (!map.getSource('positions')) {
+      map.addSource('positions', baseData)
+    }
+    if (!map.getLayer('positions')) {
+      map.addLayer({
+        id: 'positions',
+        type: 'circle',
+        source: 'positions',
+        // filter: ['has', 'vehicleType'],
+        paint: {
+          'circle-radius': [
+            'case',
+            ['boolean', ['feature-state', 'hover'], false],
+            5,
+            3,
+          ],
+          'circle-stroke-color': '#222',
+          'circle-opacity': 0.5,
+          'circle-stroke-width': [
+            'case',
+            ['boolean', ['feature-state', 'hover'], false],
+            1,
+            0.5,
+          ],
+          'circle-color': [
+            'case',
+            ['boolean', ['feature-state', 'hover'], false],
+            'red',
+            'blue',
+          ]
+        },
+      })
+    }
+  
+    setPositionMapFilter()
+  }
 
   // Set source and style initially for positions
   useEffect(() => {
     if (!map) return
     if (map.getSource('positions') || vehicleGeojson.features.length === 0) return
 
-    const baseData = {
-      type: 'geojson',
-      data: vehicleGeojson,
-    }
-    map.addSource('positions', baseData)
-    map.addLayer({
-      id: 'positions',
-      type: 'circle',
-      source: 'positions',
-      // filter: ['has', 'vehicleType'],
-      paint: {
-        'circle-radius': 3,
-        'circle-stroke-color': '#222',
-        'circle-opacity': 0.5,
-        'circle-stroke-width': 1,
-        'circle-color': 'blue'
-      },
-    })
+    addSourceAndLayer() 
 
     let hoverFeatureId
-
     map.on('mouseenter', 'positions', async function (e) {
-      debugger
-      console.info("Mousenter triggered")
-
       map.getCanvas().style.cursor = 'pointer'
 
       if (e.features.length > 0) {
@@ -141,18 +246,21 @@ const MapboxGLMap = ({basemapWaterColor}) => {
           { source: 'positions', id: hoverFeatureId },
           { hover: true },
         )
-
-        setHoveredPoint(hoverFeatureId)
       }
 
       const coordinates = e.features[0].geometry.coordinates.slice()
       
-      // TODO Get properties here for html content
+      const { route, vehicle_id, bearing, timestamp } = e.features[0].properties
 
-      // Set popup coordinates, set html and add to map
-      popup.setHTML("<h5>popup content will go here</h5>")
-        .setLngLat(coordinates)
-        .addTo(map)
+      // Set popup coordinates, set react element and add to map
+      updatePopup(
+        <VehicleInfoPopup 
+          route={route}
+          vehicle_id={vehicle_id}
+          bearing={bearing}
+          timestamp={timestamp}
+          coordinates={coordinates}
+        />, coordinates[0], coordinates[1])
     })
 
     map.on('mouseleave', 'positions', function () {
@@ -166,7 +274,7 @@ const MapboxGLMap = ({basemapWaterColor}) => {
           { hover: false })
       })
 
-      setHoveredPoint(null)
+      popup.remove()
     })
   }, [map, vehicleGeojson, popup])
 
@@ -185,8 +293,6 @@ const MapboxGLMap = ({basemapWaterColor}) => {
     map.setPaintProperty('water', 'fill-color', basemapWaterColor);
     
   }, [basemapWaterColor])
-  
-// TODO DETERMINE WHAT ARE TRAINS AND BUSSES
 
   return (
     <MapContainer

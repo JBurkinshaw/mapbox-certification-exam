@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 import MapContainer from './MapContainer'
 import Sidepanel from './Sidepanel'
 import styled from 'styled-components'
@@ -26,6 +27,10 @@ const Nav = styled.nav`
 `
 
 const Layout = () => {
+  const mapZoom = useSelector((state) => state.map.zoom)
+  const vehicleGeojson = useSelector((state) => state.map.vehicleGeojson)
+  const selectedRoute = useSelector((state) => state.map.selectedRoute)
+
   return (
     <FlexWrapper>
       <FlexBody>
@@ -33,7 +38,14 @@ const Layout = () => {
           <MapContainer id="map"/>
         </Main>
         <Nav>
-          <Sidepanel/>
+          <Sidepanel
+            mapZoom={mapZoom}
+            routeNumbers={Array.from(
+                new Set(vehicleGeojson.features.map((f) => f.properties.route))
+              ).sort()
+            }
+            selectedRoute={selectedRoute}
+          />
         </Nav>
       </FlexBody>
     </FlexWrapper>
