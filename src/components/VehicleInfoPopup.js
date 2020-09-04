@@ -39,10 +39,7 @@ const VehicleInfoPopup = ({ route, vehicle_id, bearing, timestamp, coordinates})
     }
 
     createImage()
-
-
-
-  }, []);
+  }, [coordinates]);
 
   return (
     <div>

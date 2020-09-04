@@ -1,9 +1,17 @@
-# Template Grommet React App
+# Vancouver TransLink Vehicle Locations
 
-This is a starter for SPAs that use Vanilla React using Grommet as the style system. There are other style systems such as Material UI as well as Rebass.
+A web map displaying live locations of TransLink's vehicles based on data from their [GTFS-realtime Open API](https://developer.translink.ca/ServicesGtfs').
 
-This template is meant for single-page applications (SPAs), as well as Progressive Web Apps (PWAs). If you are looking for Server Side Rendered applications or Static Site Generator, try starting a [Next](https://nextjs.org/) or a [Gatsby](https://www.gatsbyjs.org/) project while using the best practices gleamed here. Once that project is successful, a template should be added into Github.
+The popups display data from the GTFS feed and a random [Mapilliary]('https://www.mapillary.com/) image.
 
+It was created by Joe Burkinshaw at [Sparkgeo](https://sparkgeo.com/) as a Mapbox GL JS example for Mapbox's Developer Certification Program. It is not intended to have a real life use. The code is not perfect - writing it was as an opportunity to work with Mapbox GL JS in an application using React-Redux and React hooks and function components.
+
+Here's a [demo](https://vancouver-vehicle-locations.netlify.app/).
+
+## Quick start
+1. Install dependencies `yarn install`
+2. Development instance `yarn start` - available at `http://localhost:3000`
+3. Build `yarn build`
 
 ## Component and Library Layout
 
