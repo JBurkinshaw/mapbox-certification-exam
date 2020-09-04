@@ -48,8 +48,6 @@ const MapboxGLMap = ({ basemapWaterColor, vehicleGeojson, selectedRoute, mapZoom
       .addTo(map);
   }
 
-  console.log(selectedRoute)
-
   // Create the map initially
   useEffect(() => {
     mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_MAP_KEY
@@ -60,8 +58,6 @@ const MapboxGLMap = ({ basemapWaterColor, vehicleGeojson, selectedRoute, mapZoom
     const updateVehiclePositions = async () => {
       const geoJson = await gtfsArrayToGeojsonFeatures(await getPositionData())
       setGeojson(geoJson);
-      console.info('Vehicle positions updated')
-      console.log(geoJson)
     }
 
     const initializeMap = async ({ setMap, mapContainer }) => {
@@ -95,7 +91,7 @@ const MapboxGLMap = ({ basemapWaterColor, vehicleGeojson, selectedRoute, mapZoom
       })
 
       // Map click event
-      map.on('click', (e) => {
+      map.on('click', 'positions', (e) => {
         map.flyTo({
           center: e.lngLat
         });
@@ -114,7 +110,6 @@ const MapboxGLMap = ({ basemapWaterColor, vehicleGeojson, selectedRoute, mapZoom
 
     map.on('zoomend', () => {
       const zoom = map.getZoom()
-      console.log(zoom)
       setMapZoom(zoom)
 
       if (zoom > 15) {

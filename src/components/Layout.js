@@ -2,7 +2,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import MapContainer from './MapContainer'
 import Sidepanel from './Sidepanel'
-import styled from 'styled-components'
+import styled from 'styled-components/macro'
 
 const FlexWrapper = styled.div`
   display: flex;
@@ -26,6 +26,10 @@ const Nav = styled.nav`
   padding: 1em;
 `
 
+const SidepanelStyled = styled(Sidepanel)`
+  height: 100%;
+`
+
 const Layout = () => {
   const mapZoom = useSelector((state) => state.map.zoom)
   const vehicleGeojson = useSelector((state) => state.map.vehicleGeojson)
@@ -38,7 +42,8 @@ const Layout = () => {
           <MapContainer id="map"/>
         </Main>
         <Nav>
-          <Sidepanel
+          <SidepanelStyled
+          id="testid"
             mapZoom={mapZoom}
             routeNumbers={Array.from(
                 new Set(vehicleGeojson.features.map((f) => f.properties.route))
